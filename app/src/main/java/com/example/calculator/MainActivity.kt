@@ -1,6 +1,7 @@
 package com.example.calculator
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.ui.theme.lightGreen
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,10 +57,37 @@ fun CalculatorScreen() {
 
     var inputText by remember { mutableStateOf("") }
 
+    fun onDigitClicked(digitKey: String) {
+        Log.d("ON DIGIT CLICKED", digitKey)
+
+        when (digitKey) {
+            "C" -> {
+                inputText = ""
+            }
+            "=" -> {
+                inputText = Evaluator.evaluate(inputText).toString()
+            }
+            else -> {
+                if (inputText != "") {
+                    Log.d("ON DIGIT CLICKED", inputText.last().toString())
+                    if (inputText.last().toString() != "+"
+                        || inputText.last().toString() != "-"
+                        || inputText.last().toString() != "*"
+                        ||inputText.last().toString() != "."
+                    ) {
+                        inputText += digitKey
+                    }
+                } else {
+                    inputText += digitKey
+                }
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Header()
         OutputBlock(outputText = inputText)
-        DigitsBlock(onDigitClicked = { input -> inputText += input })
+        DigitsBlock(onDigitClicked = { input -> onDigitClicked(input) })
     }
 }
 
@@ -82,7 +111,7 @@ fun Header() {
 fun OutputBlock(outputText: String) {
     Box(modifier = Modifier
         .fillMaxWidth()
-        .fillMaxHeight(0.3f)
+        .fillMaxHeight(0.25f)
         .background(color = Color.White),
         contentAlignment = Alignment.CenterEnd
     ) {
@@ -98,7 +127,7 @@ fun OutputBlock(outputText: String) {
 @Composable
 fun DigitsBlock(onDigitClicked: (String) -> Unit) {
 
-    val calculatorButtons = listOf("1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "0")
+    val calculatorButtons = listOf("1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "*", "C", "0", ".", "=")
 
     LazyVerticalGrid(
         modifier = Modifier
@@ -120,7 +149,7 @@ fun CalculatorItem(buttonText: String, onDigitClicked: (String) -> Unit) {
     Box(
         modifier = Modifier
             .width(30.dp)
-            .height(150.dp)
+            .height(120.dp)
             .padding(2.dp)
             .background(lightGreen, RoundedCornerShape(10.dp))
             .clickable { onDigitClicked(buttonText) },
@@ -133,7 +162,8 @@ fun CalculatorItem(buttonText: String, onDigitClicked: (String) -> Unit) {
             fontWeight = FontWeight.SemiBold
         )
     }
-}/*@Preview(showBackground = true)
+}
+/*@Preview(showBackground = true)
 @Composable
 fun CalculatorPreview() {
     Column(modifier = Modifier.fillMaxSize()) {
